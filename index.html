@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Phiên Dịch Du Lịch - AI Real-time</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Khung viền trắng sáng -->
+        <div class="white-frame">
+            
+            <!-- Header với chữ chớp nhẹ -->
+            <div class="header">
+                <h1 class="glitch-text">✨ Phiên Dịch Du lịch ✨</h1>
+                <p class="subtitle">AI dịch thuật thời gian thực</p>
+            </div>
+
+            <!-- Khu vực hiển thị kết quả -->
+            <div class="translation-area">
+                <div class="result-box" id="resultBox">
+                    <div class="result-label">Kết quả dịch</div>
+                    <div class="result-text" id="resultText">Nhấn nút bên dưới để bắt đầu...</div>
+                </div>
+                
+                <div class="status-box" id="statusBox">
+                    <div class="status-indicator" id="statusIndicator"></div>
+                    <div class="status-text" id="statusText">Sẵn sàng</div>
+                </div>
+            </div>
+
+            <!-- Hai nút chính -->
+            <div class="button-group">
+                <!-- Nút Nghe Tiếng Anh Mỹ -->
+                <button class="action-btn listen-btn" id="listenBtn">
+                    <div class="btn-icon">🎧</div>
+                    <div class="btn-text">Nghe Tiếng Anh Mỹ</div>
+                    <div class="btn-desc">Nghe người Mỹ nói → dịch ra tiếng Việt</div>
+                </button>
+
+                <!-- Nút Nói Tiếng Anh -->
+                <button class="action-btn speak-btn" id="speakBtn">
+                    <div class="btn-icon">🎤</div>
+                    <div class="btn-text">Nói Tiếng Anh</div>
+                    <div class="btn-desc">Bạn nói tiếng Việt → phát ra tiếng Anh</div>
+                </button>
+            </div>
+
+            <!-- Hướng dẫn sử dụng -->
+            <div class="instructions">
+                <div class="instruction-item">
+                    <span class="inst-icon">🔵</span>
+                    <span class="inst-text">Nhấn "Nghe Tiếng Anh Mỹ" để nghe người đối diện nói</span>
+                </div>
+                <div class="instruction-item">
+                    <span class="inst-icon">🟢</span>
+                    <span class="inst-text">Nhấn "Nói Tiếng Anh" để nói chuyện với người nước ngoài</span>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <p>Powered by AI | Dịch thuật thời gian thực</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
