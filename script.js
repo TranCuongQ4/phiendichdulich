@@ -4,14 +4,14 @@ const GEMINI_API = "https://gemini-worker.tranmanhcuonghappy.workers.dev/";
 
 // ===== LỊCH SỬ =====
 let history = [];
-const MAX_HISTORY_DAYS = 10; // Giữ lịch sử 10 ngày
+const MAX_HISTORY_DAYS = 10;
 
 class TranslationApp {
     constructor() {
         this.recognition = null;
-        this.currentMode = null;
+        this.currentMode = null; // 'listenEn', 'speakEn', 'listenCn', 'speakCn'
         this.isListening = false;
-        this.currentAudio = null; // Lưu audio hiện tại để phát lại
+        this.currentAudio = null;
         
         this.initElements();
         this.initEventListeners();
@@ -23,18 +23,18 @@ class TranslationApp {
     initElements() {
         this.listenBtn = document.getElementById('listenBtn');
         this.speakBtn = document.getElementById('speakBtn');
+        this.listenCnBtn = document.getElementById('listenCnBtn');
+        this.speakCnBtn = document.getElementById('speakCnBtn');
         this.resultText = document.getElementById('resultText');
         this.statusText = document.getElementById('statusText');
         this.statusIndicator = document.getElementById('statusIndicator');
         
-        // Tạo container lịch sử nếu chưa có
         if (!document.getElementById('historyPanel')) {
             this.createHistoryUI();
         }
     }
     
     createHistoryUI() {
-        // Thêm CSS cho lịch sử
         const style = document.createElement('style');
         style.textContent = `
             .history-section {
@@ -50,14 +50,8 @@ class TranslationApp {
                 margin-bottom: 10px;
                 color: white;
             }
-            .history-title {
-                font-size: 14px;
-                font-weight: bold;
-            }
-            .history-buttons {
-                display: flex;
-                gap: 8px;
-            }
+            .history-title { font-size: 14px; font-weight: bold; }
+            .history-buttons { display: flex; gap: 8px; }
             .history-btn {
                 background: rgba(255,255,255,0.3);
                 border: none;
@@ -67,11 +61,7 @@ class TranslationApp {
                 cursor: pointer;
                 color: white;
             }
-            .history-list {
-                max-height: 200px;
-                overflow-y: auto;
-                border-radius: 10px;
-            }
+            .history-list { max-height: 200px; overflow-y: auto; border-radius: 10px; }
             .history-item {
                 background: rgba(255,255,255,0.9);
                 border-radius: 10px;
@@ -83,19 +73,9 @@ class TranslationApp {
                 align-items: center;
                 gap: 8px;
             }
-            .history-content {
-                flex: 1;
-                cursor: pointer;
-            }
-            .history-viet {
-                color: #2c3e50;
-                font-weight: 500;
-            }
-            .history-eng {
-                color: #7f8c8d;
-                font-size: 11px;
-                margin-top: 3px;
-            }
+            .history-content { flex: 1; cursor: pointer; }
+            .history-viet { color: #2c3e50; font-weight: 500; }
+            .history-trans { color: #7f8c8d; font-size: 11px; margin-top: 3px; }
             .play-again-btn {
                 background: #4caf50;
                 border: none;
@@ -105,19 +85,11 @@ class TranslationApp {
                 cursor: pointer;
                 color: white;
             }
-            .empty-history {
-                text-align: center;
-                color: rgba(255,255,255,0.7);
-                font-size: 12px;
-                padding: 15px;
-            }
-            .history-list::-webkit-scrollbar {
-                width: 3px;
-            }
+            .empty-history { text-align: center; color: rgba(255,255,255,0.7); font-size: 12px; padding: 15px; }
+            .history-list::-webkit-scrollbar { width: 3px; }
         `;
         document.head.appendChild(style);
         
-        // Tạo HTML lịch sử
         const historyHTML = `
             <div class="history-section" id="historyPanel">
                 <div class="history-header">
@@ -132,55 +104,24 @@ class TranslationApp {
             </div>
         `;
         
-        // Chèn sau button-group
         const buttonGroup = document.querySelector('.button-group');
         if (buttonGroup) {
             buttonGroup.insertAdjacentHTML('afterend', historyHTML);
         }
         
-        // Gắn sự kiện cho nút xóa
         document.getElementById('clearHistoryBtn')?.addEventListener('click', () => this.clearHistoryWithConfirm());
     }
     
     addSecurityFeatures() {
-        // Chặn chuột phải
-        document.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            return false;
-        });
+        document.addEventListener('contextmenu', (e) => { e.preventDefault(); return false; });
+        document.addEventListener('copy', (e) => { e.preventDefault(); return false; });
+        document.addEventListener('cut', (e) => { e.preventDefault(); return false; });
+        document.addEventListener('dragstart', (e) => { e.preventDefault(); return false; });
         
-        // Chặn copy (Ctrl+C, Ctrl+X)
-        document.addEventListener('copy', (e) => {
-            e.preventDefault();
-            return false;
-        });
-        
-        document.addEventListener('cut', (e) => {
-            e.preventDefault();
-            return false;
-        });
-        
-        // Chặn kéo thả copy
-        document.addEventListener('dragstart', (e) => {
-            e.preventDefault();
-            return false;
-        });
-        
-        // Thêm style chống chọn text
         const style = document.createElement('style');
-        style.textContent = `
-            body {
-                user-select: none;
-                -webkit-user-select: none;
-            }
-            input, textarea {
-                user-select: text;
-                -webkit-user-select: text;
-            }
-        `;
+        style.textContent = `body { user-select: none; -webkit-user-select: none; } input, textarea { user-select: text; -webkit-user-select: text; }`;
         document.head.appendChild(style);
         
-        // F12 không bị chặn (vẫn mở dev tools)
         console.log('🛡️ Chế độ bảo vệ đã bật - Chuột phải và copy bị chặn');
     }
     
@@ -189,7 +130,6 @@ class TranslationApp {
         if (saved) {
             try {
                 history = JSON.parse(saved);
-                // Kiểm tra và xóa dữ liệu cũ hơn MAX_HISTORY_DAYS
                 const now = Date.now();
                 const maxAge = MAX_HISTORY_DAYS * 24 * 60 * 60 * 1000;
                 history = history.filter(item => (now - item.timestamp) < maxAge);
@@ -199,22 +139,16 @@ class TranslationApp {
         }
     }
     
-    saveHistory() {
-        localStorage.setItem('translation_history', JSON.stringify(history));
-    }
+    saveHistory() { localStorage.setItem('translation_history', JSON.stringify(history)); }
     
-    addToHistory(vietText, engText) {
+    addToHistory(originalText, translatedText, targetLang) {
         history.unshift({
-            viet: vietText,
-            eng: engText,
+            original: originalText,
+            translated: translatedText,
+            targetLang: targetLang,
             timestamp: Date.now()
         });
-        
-        // Giới hạn số lượng để tránh đầy bộ nhớ (tối đa 200 item)
-        if (history.length > 200) {
-            history = history.slice(0, 200);
-        }
-        
+        if (history.length > 200) history = history.slice(0, 200);
         this.saveHistory();
         this.renderHistory();
     }
@@ -228,35 +162,33 @@ class TranslationApp {
             return;
         }
         
-        historyList.innerHTML = history.map((item, index) => `
+        historyList.innerHTML = history.map((item, index) => {
+            const flag = item.targetLang === 'en' ? '🇺🇸' : '🇨🇳';
+            const langName = item.targetLang === 'en' ? 'Anh' : 'Trung';
+            return `
             <div class="history-item">
                 <div class="history-content" onclick="app.replayHistory(${index})">
-                    <div class="history-viet">🇻🇳 ${this.truncateText(item.viet, 50)}</div>
-                    <div class="history-eng">🔊 ${this.truncateText(item.eng, 50)}</div>
+                    <div class="history-viet">🇻🇳 ${this.truncateText(item.original, 45)}</div>
+                    <div class="history-trans">${flag} ${langName}: ${this.truncateText(item.translated, 45)}</div>
                 </div>
                 <button class="play-again-btn" onclick="app.playHistoryAudio(${index})">🔊 Phát lại</button>
             </div>
-        `).join('');
+        `}).join('');
     }
     
-    truncateText(text, maxLen) {
-        if (text.length <= maxLen) return text;
-        return text.substring(0, maxLen) + '...';
-    }
+    truncateText(text, maxLen) { return text.length <= maxLen ? text : text.substring(0, maxLen) + '...'; }
     
     replayHistory(index) {
         const item = history[index];
-        if (item && item.eng) {
-            this.resultText.innerHTML = `🔊 PHÁT LẠI TỪ LỊCH SỬ:\n🇻🇳 "${item.viet}"\n\n🔊 TIẾNG ANH:\n"${item.eng}"`;
-            this.speakEnglish(item.eng);
+        if (item && item.translated) {
+            this.resultText.innerHTML = `🔊 PHÁT LẠI TỪ LỊCH SỬ:\n🇻🇳 "${item.original}"\n\n${item.targetLang === 'en' ? '🇺🇸 TIẾNG ANH' : '🇨🇳 TIẾNG TRUNG'}:\n"${item.translated}"`;
+            this.speakText(item.translated, item.targetLang);
         }
     }
     
     playHistoryAudio(index) {
         const item = history[index];
-        if (item && item.eng) {
-            this.speakEnglish(item.eng);
-        }
+        if (item && item.translated) this.speakText(item.translated, item.targetLang);
     }
     
     clearHistoryWithConfirm() {
@@ -288,14 +220,17 @@ class TranslationApp {
                     console.log('Nhận diện được:', text);
                     this.resultText.innerHTML = `📝 Đã nhận diện: "${text}"\n\n🔄 Đang dịch...`;
                     
-                    if (this.currentMode === 'listen') {
+                    if (this.currentMode === 'listenEn') {
                         await this.translateWithFallback(text, 'en', 'vi');
-                    } else {
+                    } else if (this.currentMode === 'speakEn') {
                         await this.translateWithFallback(text, 'vi', 'en');
+                    } else if (this.currentMode === 'listenCn') {
+                        await this.translateWithFallback(text, 'zh', 'vi');
+                    } else if (this.currentMode === 'speakCn') {
+                        await this.translateWithFallback(text, 'vi', 'zh');
                     }
                 } else if (event.results[0] && !event.results[0].isFinal) {
-                    const interimText = event.results[0][0].transcript;
-                    this.resultText.innerHTML = `🎙️ Đang nghe: "${interimText}"`;
+                    this.resultText.innerHTML = `🎙️ Đang nghe: "${event.results[0][0].transcript}"`;
                 }
             };
             
@@ -325,10 +260,10 @@ class TranslationApp {
     
     async translateWithFallback(text, sourceLang, targetLang) {
         try {
-            console.log('🟢 Thử Cloudflare...');
+            console.log(`🟢 Thử Cloudflare: ${sourceLang} → ${targetLang}`);
             const result = await this.callCloudflare(text, sourceLang, targetLang);
             if (result.success) {
-                this.displayTranslation(text, result.translated, '☁️ Cloudflare');
+                this.displayTranslation(text, result.translated, '☁️ Cloudflare', targetLang);
                 return;
             }
         } catch (error) {
@@ -336,11 +271,11 @@ class TranslationApp {
         }
         
         try {
-            console.log('🔁 Chuyển sang Gemini...');
+            console.log(`🔁 Chuyển sang Gemini: ${sourceLang} → ${targetLang}`);
             this.updateStatus('🌐 Đang dịch (Gemini)...', 'processing');
             const result = await this.callGemini(text, sourceLang, targetLang);
             if (result.success) {
-                this.displayTranslation(text, result.translated, '✨ Gemini');
+                this.displayTranslation(text, result.translated, '✨ Gemini', targetLang);
                 return;
             }
         } catch (error) {
@@ -355,7 +290,6 @@ class TranslationApp {
         const url = `${CLOUDFLARE_API}?text=${encodeURIComponent(text)}&source=${sourceLang}&target=${targetLang}`;
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000);
-        
         try {
             const response = await fetch(url, { signal: controller.signal });
             clearTimeout(timeoutId);
@@ -370,7 +304,6 @@ class TranslationApp {
     async callGemini(text, sourceLang, targetLang) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
-        
         try {
             const response = await fetch(GEMINI_API, {
                 method: 'POST',
@@ -387,25 +320,29 @@ class TranslationApp {
         }
     }
     
-    displayTranslation(originalText, translatedText, service) {
-        if (this.currentMode === 'listen') {
-            this.resultText.innerHTML = `🎧 NGƯỜI NÓI (Tiếng Anh):\n"${originalText}"\n\n\n🇻🇳 TIẾNG VIỆT:\n"${translatedText}"\n\n📡 ${service}`;
+    displayTranslation(originalText, translatedText, service, targetLang) {
+        const isVietnameseTarget = (targetLang === 'vi');
+        
+        if (isVietnameseTarget) {
+            // Nghe: Anh/Trung → Việt
+            const sourceFlag = this.currentMode === 'listenEn' ? '🇺🇸 TIẾNG ANH' : '🇨🇳 TIẾNG TRUNG';
+            this.resultText.innerHTML = `🎧 NGƯỜI NÓI (${sourceFlag}):\n"${originalText}"\n\n\n🇻🇳 TIẾNG VIỆT:\n"${translatedText}"\n\n📡 ${service}`;
         } else {
-            // Lưu vào lịch sử (tiếng Việt gốc, tiếng Anh dịch)
-            this.addToHistory(originalText, translatedText);
-            
-            this.resultText.innerHTML = `🇻🇳 BẠN NÓI (Tiếng Việt):\n"${originalText}"\n\n\n🔊 TIẾNG ANH:\n"${translatedText}"\n\n🔊 Đang phát...\n📡 ${service}\n\n🔄 Nhấn nút bên cạnh để phát lại!`;
-            this.speakEnglish(translatedText);
+            // Nói: Việt → Anh/Trung
+            const targetFlag = targetLang === 'en' ? '🇺🇸 TIẾNG ANH' : '🇨🇳 TIẾNG TRUNG';
+            this.addToHistory(originalText, translatedText, targetLang);
+            this.resultText.innerHTML = `🇻🇳 BẠN NÓI (Tiếng Việt):\n"${originalText}"\n\n\n🔊 ${targetFlag}:\n"${translatedText}"\n\n🔊 Đang phát...\n📡 ${service}`;
+            this.speakText(translatedText, targetLang);
         }
         this.updateStatus('✅ Hoàn thành', 'ready');
-        console.log(`✅ Dịch thành công bằng ${service}`);
+        console.log(`✅ Dịch thành công bằng ${service} → ${targetLang}`);
     }
     
-    speakEnglish(text) {
+    speakText(text, lang) {
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
+            utterance.lang = lang === 'en' ? 'en-US' : 'zh-CN';
             utterance.rate = 0.9;
             utterance.pitch = 1.0;
             utterance.volume = 1.0;
@@ -415,25 +352,47 @@ class TranslationApp {
     }
     
     initEventListeners() {
-        this.listenBtn.addEventListener('mousedown', () => this.startPress('en-US'));
+        // Tiếng Anh
+        this.listenBtn.addEventListener('mousedown', () => this.startPress('en-US', 'listenEn'));
         this.listenBtn.addEventListener('mouseup', () => this.endPress());
         this.listenBtn.addEventListener('mouseleave', () => this.endPress());
         
-        this.speakBtn.addEventListener('mousedown', () => this.startPress('vi-VN'));
+        this.speakBtn.addEventListener('mousedown', () => this.startPress('vi-VN', 'speakEn'));
         this.speakBtn.addEventListener('mouseup', () => this.endPress());
         this.speakBtn.addEventListener('mouseleave', () => this.endPress());
         
-        this.listenBtn.addEventListener('touchstart', (e) => { e.preventDefault(); this.startPress('en-US'); });
+        // Tiếng Trung
+        this.listenCnBtn.addEventListener('mousedown', () => this.startPress('zh-CN', 'listenCn'));
+        this.listenCnBtn.addEventListener('mouseup', () => this.endPress());
+        this.listenCnBtn.addEventListener('mouseleave', () => this.endPress());
+        
+        this.speakCnBtn.addEventListener('mousedown', () => this.startPress('vi-VN', 'speakCn'));
+        this.speakCnBtn.addEventListener('mouseup', () => this.endPress());
+        this.speakCnBtn.addEventListener('mouseleave', () => this.endPress());
+        
+        // Touch events
+        this.listenBtn.addEventListener('touchstart', (e) => { e.preventDefault(); this.startPress('en-US', 'listenEn'); });
         this.listenBtn.addEventListener('touchend', (e) => { e.preventDefault(); this.endPress(); });
-        this.speakBtn.addEventListener('touchstart', (e) => { e.preventDefault(); this.startPress('vi-VN'); });
+        this.speakBtn.addEventListener('touchstart', (e) => { e.preventDefault(); this.startPress('vi-VN', 'speakEn'); });
         this.speakBtn.addEventListener('touchend', (e) => { e.preventDefault(); this.endPress(); });
+        this.listenCnBtn.addEventListener('touchstart', (e) => { e.preventDefault(); this.startPress('zh-CN', 'listenCn'); });
+        this.listenCnBtn.addEventListener('touchend', (e) => { e.preventDefault(); this.endPress(); });
+        this.speakCnBtn.addEventListener('touchstart', (e) => { e.preventDefault(); this.startPress('vi-VN', 'speakCn'); });
+        this.speakCnBtn.addEventListener('touchend', (e) => { e.preventDefault(); this.endPress(); });
     }
     
-    startPress(language) {
+    startPress(language, mode) {
         if (this.isListening) return;
-        this.currentMode = language === 'en-US' ? 'listen' : 'speak';
-        const modeText = language === 'en-US' ? 'TIẾNG ANH MỸ' : 'TIẾNG VIỆT';
-        const speakHint = language === 'en-US' ? 'Nói TIẾNG ANH' : 'Nói TIẾNG VIỆT';
+        this.currentMode = mode;
+        
+        let modeText = '';
+        let speakHint = '';
+        
+        if (mode === 'listenEn') { modeText = 'TIẾNG ANH MỸ'; speakHint = 'Nói TIẾNG ANH'; }
+        else if (mode === 'speakEn') { modeText = 'TIẾNG VIỆT → ANH'; speakHint = 'Nói TIẾNG VIỆT'; }
+        else if (mode === 'listenCn') { modeText = 'TIẾNG TRUNG'; speakHint = 'Nói TIẾNG TRUNG'; }
+        else if (mode === 'speakCn') { modeText = 'TIẾNG VIỆT → TRUNG'; speakHint = 'Nói TIẾNG VIỆT'; }
+        
         this.resultText.innerHTML = `🎙️ GIỮ NÚT VÀ NÓI\n${speakHint}\n\nBuông nút để dịch ngay!`;
         this.updateStatus(`Đang nghe ${modeText}...`, 'listening');
         this.recognition.lang = language;
@@ -463,13 +422,12 @@ class TranslationApp {
     }
 }
 
-// Khởi tạo ứng dụng
 let app;
 document.addEventListener('DOMContentLoaded', () => {
     app = new TranslationApp();
-    console.log('🎉 Phiên Dịch Du Lịch - ĐÃ THÊM LỊCH SỬ + PHÁT LẠI + CHẶN COPY!');
-    console.log('   ☁️ Cloudflare: 500 câu/ngày (ưu tiên)');
-    console.log('   ✨ Gemini: 1.500 câu/ngày (dự phòng)');
-    console.log('   📜 Lịch sử tự động lưu 10 ngày');
-    console.log('   🛡️ Đã chặn chuột phải và copy');
+    console.log('🎉 Phiên Dịch Du Lịch - HỖ TRỢ TIẾNG ANH & TIẾNG TRUNG!');
+    console.log('   🇺🇸 Anh → Việt | Việt → Anh');
+    console.log('   🇨🇳 Trung → Việt | Việt → Trung');
+    console.log('   ☁️ Cloudflare (ưu tiên) + ✨ Gemini (dự phòng)');
+    console.log('   📜 Lịch sử lưu 10 ngày | 🛡️ Chặn copy');
 });

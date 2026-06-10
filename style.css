@@ -11,36 +11,37 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 0;  /* Bỏ padding để tràn mép */
+    padding: 0;
 }
 
-/* Container chính kích thước 375x675 - TRÀN MÉP TRÁI PHẢI */
+/* Container chính */
 .app-container {
-    width: 100%;  /* Đổi từ 375px thành 100% */
-    max-width: 500px; /* Giới hạn tối đa cho màn hình lớn */
+    width: 100%;
+    max-width: 500px;
     height: 675px;
     background: transparent;
-    border-radius: 0px;  /* Bỏ bo góc nếu muốn tràn hoàn toàn */
-    box-shadow: none;  /* Bỏ shadow vì tràn mép */
+    border-radius: 0px;
+    box-shadow: none;
     overflow: hidden;
-    margin: 0 auto;  /* Căn giữa nhưng tràn 2 bên */
+    margin: 0 auto;
 }
 
-/* Khung viền trắng sáng - bo góc nhẹ ở trên dưới */
+/* Khung viền trắng sáng - QUAN TRỌNG: có thể cuộn được */
 .white-frame {
     width: 100%;
     height: 100%;
     background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
-    border-radius: 0px;  /* Hoặc để 30px nếu muốn bo 4 góc */
+    border-radius: 0px;
     padding: 20px;
     display: flex;
     flex-direction: column;
     position: relative;
-    overflow-y: auto;
+    overflow-y: auto !important;  /* Ép buộc cuộn được */
     box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5);
+    z-index: 1;
 }
 
-/* Tùy chỉnh scrollbar */
+/* Scrollbar */
 .white-frame::-webkit-scrollbar {
     width: 4px;
 }
@@ -71,8 +72,7 @@ body {
 }
 
 @keyframes gentleGlitch {
-    0%,
-    100% {
+    0%, 100% {
         text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
         opacity: 1;
     }
@@ -118,7 +118,7 @@ body {
     line-height: 1.5;
     word-wrap: break-word;
     font-weight: 500;
-    white-space: pre-wrap;  /* Giữ xuống dòng */
+    white-space: pre-wrap;
 }
 
 .status-box {
@@ -150,18 +150,9 @@ body {
 }
 
 @keyframes pulse {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.2);
-        opacity: 0.7;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
 .status-text {
@@ -178,30 +169,56 @@ body {
     margin-bottom: 20px;
 }
 
+/* Nút 3D */
 .action-btn {
     background: white;
     border: none;
     border-radius: 25px;
     padding: 18px 20px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
     text-align: left;
     display: flex;
     flex-direction: column;
     gap: 5px;
+    position: relative;
+    background: linear-gradient(145deg, #ffffff, #e6e6e6);
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2), -2px -2px 5px rgba(255, 255, 255, 0.5);
 }
 
 .action-btn:active {
-    transform: scale(0.98);
+    transform: translateY(3px);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2), -1px -1px 3px rgba(255, 255, 255, 0.5);
 }
 
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 8px 8px 15px rgba(0, 0, 0, 0.25), -3px -3px 8px rgba(255, 255, 255, 0.6);
+}
+
+/* Màu viền nút */
 .listen-btn {
     border-left: 5px solid #2196f3;
+    background: linear-gradient(145deg, #ffffff, #e8f4ff);
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2), -2px -2px 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(33, 150, 243, 0.3);
 }
 
 .speak-btn {
     border-left: 5px solid #4caf50;
+    background: linear-gradient(145deg, #ffffff, #e8fbe8);
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2), -2px -2px 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(76, 175, 80, 0.3);
+}
+
+.listen-cn-btn {
+    border-left: 5px solid #e74c3c;
+    background: linear-gradient(145deg, #ffffff, #ffe8e8);
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2), -2px -2px 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(231, 76, 60, 0.3);
+}
+
+.speak-cn-btn {
+    border-left: 5px solid #e67e22;
+    background: linear-gradient(145deg, #ffffff, #fff0e0);
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2), -2px -2px 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(230, 126, 34, 0.3);
 }
 
 .btn-icon {
@@ -360,12 +377,16 @@ body {
         margin: 20px auto;
     }
     
+    .app-container::before {
+        border-radius: 33px;
+    }
+    
     .white-frame {
         border-radius: 30px;
     }
 }
 
-/* Hiệu ứng loading cho nút */
+/* Loading */
 .action-btn.loading {
     opacity: 0.7;
     cursor: not-allowed;
@@ -376,10 +397,102 @@ body {
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ===== VIỀN LED CHẠY BAO QUANH TOÀN BỘ KHUNG CUỘN ===== */
+/* Wrapper bọc bên ngoài để tạo viền LED cố định */
+.app-container {
+    position: relative;
+    border-radius: 30px;
+}
+
+/* Viền LED chạy bao quanh toàn bộ container */
+.app-container::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    background: linear-gradient(45deg, 
+        #ffffff, #ffffff,  
+        #ffeb3b, #ffeb3b,
+        #4caf50, #4caf50,
+        #2196f3, #2196f3,
+        #e74c3c, #e74c3c,
+        #ffffff, #ffffff
+    );
+    background-size: 300% 300%;
+    border-radius: 33px;
+    animation: borderGlow 8s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.app-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
+    border-radius: 30px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Đảm bảo white-frame nằm trên viền LED */
+.white-frame {
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+    border-radius: 30px;
+    overflow-y: auto !important;
+}
+
+/* Animation cho viền LED */
+@keyframes borderGlow {
+    0% { background-position: 0% 50%; }
+    25% { background-position: 50% 100%; }
+    50% { background-position: 100% 50%; }
+    75% { background-position: 50% 0%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ===== HẠT SÁNG BAY (đặt trong white-frame để cuộn theo nội dung) ===== */
+@keyframes floatLight {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(0deg);
+        opacity: 0;
     }
-    to {
-        transform: rotate(360deg);
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% {
+        transform: translateX(200%) translateY(200%) rotate(360deg);
+        opacity: 0;
     }
 }
+
+.light-particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: radial-gradient(circle, #fff, #ffeb3b, #ff9800);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10;
+    filter: blur(2px);
+    animation: floatLight 6s ease-in-out infinite;
+}
+
+.light-particle:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; animation-duration: 5s; }
+.light-particle:nth-child(2) { top: 30%; left: 85%; animation-delay: 1s; animation-duration: 6s; }
+.light-particle:nth-child(3) { top: 60%; left: 15%; animation-delay: 2s; animation-duration: 7s; }
+.light-particle:nth-child(4) { top: 80%; left: 70%; animation-delay: 3s; animation-duration: 5.5s; }
+.light-particle:nth-child(5) { top: 20%; left: 50%; animation-delay: 4s; animation-duration: 6.5s; }
+.light-particle:nth-child(6) { top: 70%; left: 40%; animation-delay: 0.5s; animation-duration: 7.5s; }
+.light-particle:nth-child(7) { top: 45%; left: 5%; animation-delay: 1.5s; animation-duration: 5.8s; }
+.light-particle:nth-child(8) { top: 15%; left: 75%; animation-delay: 2.5s; animation-duration: 6.2s; }

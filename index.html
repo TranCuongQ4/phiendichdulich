@@ -6,20 +6,26 @@
     <meta name="mobile-web-app-capable" content="yes">
     <title>Phiên Dịch Du Lịch - AI Real-time</title>
     <link rel="stylesheet" href="style.css">
-	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌐</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌐</text></svg>">
 </head>
 <body>
     <div class="app-container">
-        <!-- Khung viền trắng sáng -->
         <div class="white-frame">
-            
-            <!-- Header với chữ chớp nhẹ -->
+            <!-- Hạt sáng -->
+            <div class="light-particle"></div>
+            <div class="light-particle"></div>
+            <div class="light-particle"></div>
+            <div class="light-particle"></div>
+            <div class="light-particle"></div>
+            <div class="light-particle"></div>
+            <div class="light-particle"></div>
+            <div class="light-particle"></div>
+	
             <div class="header">
                 <h1 class="glitch-text">✨ Phiên Dịch Du lịch ✨</h1>
                 <p class="subtitle">AI dịch thuật thời gian thực</p>
             </div>
 
-            <!-- Khu vực hiển thị kết quả -->
             <div class="translation-area">
                 <div class="result-box" id="resultBox">
                     <div class="result-label">Kết quả dịch</div>
@@ -32,38 +38,46 @@
                 </div>
             </div>
 
-            <!-- Hai nút chính -->
+            <!-- 4 nút chính -->
             <div class="button-group">
                 <!-- Nút Nghe Tiếng Anh Mỹ -->
                 <button class="action-btn listen-btn" id="listenBtn">
-                    <div class="btn-icon">🎧</div>
+                    <div class="btn-icon">🎧🇺🇸</div>
                     <div class="btn-text">Nghe Tiếng Anh Mỹ</div>
-                    <div class="btn-desc">Nghe người Mỹ nói → dịch ra tiếng Việt</div>
+                    <div class="btn-desc">Nghe tiếng Anh → dịch ra tiếng Việt</div>
                 </button>
 
                 <!-- Nút Nói Tiếng Anh -->
                 <button class="action-btn speak-btn" id="speakBtn">
-                    <div class="btn-icon">🎤</div>
+                    <div class="btn-icon">🎤🇺🇸</div>
                     <div class="btn-text">Nói Tiếng Anh</div>
-                    <div class="btn-desc">Bạn nói tiếng Việt → phát ra tiếng Anh</div>
+                    <div class="btn-desc">Nói tiếng Việt → phát ra tiếng Anh</div>
+                </button>
+
+                <!-- Nút Nghe Tiếng Trung -->
+                <button class="action-btn listen-cn-btn" id="listenCnBtn">
+                    <div class="btn-icon">🎧🇨🇳</div>
+                    <div class="btn-text">Nghe Tiếng Trung</div>
+                    <div class="btn-desc">Nghe tiếng Trung → dịch ra tiếng Việt</div>
+                </button>
+
+                <!-- Nút Nói Tiếng Trung -->
+                <button class="action-btn speak-cn-btn" id="speakCnBtn">
+                    <div class="btn-icon">🎤🇨🇳</div>
+                    <div class="btn-text">Nói Tiếng Trung</div>
+                    <div class="btn-desc">Nói tiếng Việt → phát ra tiếng Trung</div>
                 </button>
             </div>
 
-            <!-- Hướng dẫn sử dụng -->
             <div class="instructions">
-                <div class="instruction-item">
-                    <span class="inst-icon">🔵</span>
-                    <span class="inst-text">Nhấn "Nghe Tiếng Anh Mỹ" để nghe người đối diện nói</span>
-                </div>
-                <div class="instruction-item">
-                    <span class="inst-icon">🟢</span>
-                    <span class="inst-text">Nhấn "Nói Tiếng Anh" để nói chuyện với người nước ngoài</span>
-                </div>
+                <div class="instruction-item"><span class="inst-icon">🔵</span><span class="inst-text">Nhấn GIỮ nút xanh dương → nói TIẾNG ANH → BUÔNG → dịch sang VIỆT</span></div>
+                <div class="instruction-item"><span class="inst-icon">🟢</span><span class="inst-text">Nhấn GIỮ nút xanh lá → nói TIẾNG VIỆT → BUÔNG → phát TIẾNG ANH</span></div>
+                <div class="instruction-item"><span class="inst-icon">🔴</span><span class="inst-text">Nhấn GIỮ nút đỏ → nói TIẾNG TRUNG → BUÔNG → dịch sang VIỆT</span></div>
+                <div class="instruction-item"><span class="inst-icon">🟠</span><span class="inst-text">Nhấn GIỮ nút cam → nói TIẾNG VIỆT → BUÔNG → phát TIẾNG TRUNG</span></div>
             </div>
 
-            <!-- Footer -->
             <div class="footer">
-                <p>Powered by AI | Dịch thuật thời gian thực</p>
+                <p>Thiết Kế Trần Cường -Zalo: 0907860662</p>
             </div>
         </div>
     </div>
