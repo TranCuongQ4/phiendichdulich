@@ -321,22 +321,39 @@ class TranslationApp {
     }
     
     displayTranslation(originalText, translatedText, service, targetLang) {
-        const isVietnameseTarget = (targetLang === 'vi');
+    const isVietnameseTarget = (targetLang === 'vi');
+    
+    if (isVietnameseTarget) {
+        // Chế độ NGHE: Anh/Trung → Việt (ĐỌC TIẾNG VIỆT)
+        const sourceFlag = this.currentMode === 'listenEn' ? '🇺🇸 TIẾNG ANH' : '🇨🇳 TIẾNG TRUNG';
+        this.resultText.innerHTML = `🎧 NGƯỜI NÓI (${sourceFlag}):\n"${originalText}"\n\n\n🇻🇳 TIẾNG VIỆT:\n"${translatedText}"\n\n🔊 Đang đọc tiếng Việt...\n📡 ${service}`;
         
-        if (isVietnameseTarget) {
-            // Nghe: Anh/Trung → Việt
-            const sourceFlag = this.currentMode === 'listenEn' ? '🇺🇸 TIẾNG ANH' : '🇨🇳 TIẾNG TRUNG';
-            this.resultText.innerHTML = `🎧 NGƯỜI NÓI (${sourceFlag}):\n"${originalText}"\n\n\n🇻🇳 TIẾNG VIỆT:\n"${translatedText}"\n\n📡 ${service}`;
-        } else {
-            // Nói: Việt → Anh/Trung
-            const targetFlag = targetLang === 'en' ? '🇺🇸 TIẾNG ANH' : '🇨🇳 TIẾNG TRUNG';
-            this.addToHistory(originalText, translatedText, targetLang);
-            this.resultText.innerHTML = `🇻🇳 BẠN NÓI (Tiếng Việt):\n"${originalText}"\n\n\n🔊 ${targetFlag}:\n"${translatedText}"\n\n🔊 Đang phát...\n📡 ${service}`;
-            this.speakText(translatedText, targetLang);
-        }
-        this.updateStatus('✅ Hoàn thành', 'ready');
-        console.log(`✅ Dịch thành công bằng ${service} → ${targetLang}`);
+        // ĐỌC TIẾNG VIỆT (quan trọng!)
+        this.speakVietnamese(translatedText);
+        
+    } else {
+        // Chế độ NÓI: Việt → Anh/Trung (GIỮ NGUYÊN)
+        const targetFlag = targetLang === 'en' ? '🇺🇸 TIẾNG ANH' : '🇨🇳 TIẾNG TRUNG';
+        this.addToHistory(originalText, translatedText, targetLang);
+        this.resultText.innerHTML = `🇻🇳 BẠN NÓI (Tiếng Việt):\n"${originalText}"\n\n\n🔊 ${targetFlag}:\n"${translatedText}"\n\n🔊 Đang phát...\n📡 ${service}`;
+        this.speakText(translatedText, targetLang);
     }
+    this.updateStatus('✅ Hoàn thành', 'ready');
+    console.log(`✅ Dịch thành công bằng ${service} → ${targetLang}`);
+}
+
+// Thêm hàm đọc tiếng Việt mới
+speakVietnamese(text) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'vi-VN';  // Tiếng Việt
+        utterance.rate = 0.9;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        setTimeout(() => window.speechSynthesis.speak(utterance), 100);
+    }
+}
     
     speakText(text, lang) {
         if ('speechSynthesis' in window) {
