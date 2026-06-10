@@ -83,5 +83,19 @@
     </div>
 
     <script src="script.js"></script>
+	<script>
+    // Đăng ký Service Worker để chạy offline
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('✅ Service Worker đã đăng ký thành công:', registration.scope);
+                })
+                .catch(error => {
+                    console.error('❌ Đăng ký Service Worker thất bại:', error);
+                });
+        });
+    }
+</script>
 </body>
 </html>

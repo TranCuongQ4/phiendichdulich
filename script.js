@@ -447,4 +447,19 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('   🇨🇳 Trung → Việt | Việt → Trung');
     console.log('   ☁️ Cloudflare (ưu tiên) + ✨ Gemini (dự phòng)');
     console.log('   📜 Lịch sử lưu 10 ngày | 🛡️ Chặn copy');
+	// Kiểm tra trạng thái mạng
+window.addEventListener('online', () => {
+    app.updateStatus('📡 Đã kết nối mạng', 'ready');
+    console.log('🟢 Online - Có thể dịch câu mới');
+});
+
+window.addEventListener('offline', () => {
+    app.updateStatus('⚠️ Mất mạng! Vẫn xem được lịch sử', 'error');
+    console.log('🔴 Offline - Chỉ xem được lịch sử đã lưu');
+});
+
+// Hiển thị trạng thái ban đầu
+if (!navigator.onLine) {
+    app.updateStatus('⚠️ Mất mạng! Vẫn xem được lịch sử', 'error');
+}
 });
