@@ -3,14 +3,15 @@ const TRANSLATE_API_URL = "https://translate-worker.tranmanhcuonghappy.workers.d
 
 class TranslationApp {
     constructor() {
-        this.mediaRecorder = null;
-        this.audioChunks = [];
+        this.recognition = null;
         this.currentMode = null;
-        this.isRecording = false;
-        this.stream = null;
+        this.isListening = false;
+        this.isLongPress = false;
+        this.longPressTimeout = null;
         
         this.initElements();
         this.initEventListeners();
+        this.initSpeechRecognition();
     }
     
     initElements() {
@@ -21,39 +22,96 @@ class TranslationApp {
         this.statusIndicator = document.getElementById('statusIndicator');
     }
     
+    initSpeechRecognition() {
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            this.recognition = new SpeechRecognition();
+            this.recognition.continuous = false;
+            this.recognition.interimResults = true;
+            this.recognition.maxAlternatives = 1;
+            
+            this.recognition.onstart = () => {
+                this.isListening = true;
+                this.updateStatus('🎤 Đang nghe, hãy nói...', 'listening');
+            };
+            
+            this.recognition.onresult = async (event) => {
+                // Lấy kết quả cuối cùng (khi người dùng ngừng nói)
+                const result = event.results[event.results.length - 1];
+                if (result && result.isFinal) {
+                    const text = result[0].transcript;
+                    console.log('Nhận diện được:', text);
+                    this.resultText.innerHTML = `📝 Đã nhận diện: "${text}"\n\n🔄 Đang dịch...`;
+                    
+                    if (this.currentMode === 'listen') {
+                        await this.translateText(text, 'en', 'vi');
+                    } else {
+                        await this.translateText(text, 'vi', 'en');
+                    }
+                } else if (event.results[0] && !event.results[0].isFinal) {
+                    // Hiển thị kết quả tạm thời
+                    const interimText = event.results[0][0].transcript;
+                    this.resultText.innerHTML = `🎙️ Đang nghe: "${interimText}"`;
+                }
+            };
+            
+            this.recognition.onerror = (event) => {
+                console.error('Lỗi recognition:', event.error);
+                if (event.error === 'no-speech') {
+                    this.updateStatus('Không nghe thấy giọng nói', 'error');
+                    this.resultText.innerHTML = '🔇 Không nghe thấy. Hãy thử lại.';
+                } else if (event.error === 'not-allowed') {
+                    this.updateStatus('Chưa cho phép microphone', 'error');
+                    this.resultText.innerHTML = '🎙️ Vui lòng cho phép microphone.';
+                }
+                this.isListening = false;
+                this.updateStatus('Sẵn sàng', 'ready');
+            };
+            
+            this.recognition.onend = () => {
+                this.isListening = false;
+                if (this.statusText.innerText !== '✅ Hoàn thành') {
+                    this.updateStatus('Sẵn sàng', 'ready');
+                }
+            };
+        } else {
+            this.updateStatus('Trình duyệt không hỗ trợ', 'error');
+        }
+    }
+    
     initEventListeners() {
-        // Chế độ Nghe tiếng Anh -> dịch ra Việt
-        this.listenBtn.addEventListener('mousedown', () => this.startRecording('en-US'));
-        this.listenBtn.addEventListener('mouseup', () => this.stopRecordingAndTranslate());
-        this.listenBtn.addEventListener('mouseleave', () => this.stopRecordingAndTranslate());
+        // Xử lý nhấn giữ cho nút Nghe tiếng Anh
+        this.listenBtn.addEventListener('mousedown', () => this.startPress('en-US'));
+        this.listenBtn.addEventListener('mouseup', () => this.endPress());
+        this.listenBtn.addEventListener('mouseleave', () => this.endPress());
         
-        // Chế độ Nói tiếng Việt -> dịch ra Anh
-        this.speakBtn.addEventListener('mousedown', () => this.startRecording('vi-VN'));
-        this.speakBtn.addEventListener('mouseup', () => this.stopRecordingAndTranslate());
-        this.speakBtn.addEventListener('mouseleave', () => this.stopRecordingAndTranslate());
+        // Xử lý nhấn giữ cho nút Nói tiếng Việt
+        this.speakBtn.addEventListener('mousedown', () => this.startPress('vi-VN'));
+        this.speakBtn.addEventListener('mouseup', () => this.endPress());
+        this.speakBtn.addEventListener('mouseleave', () => this.endPress());
         
-        // Hỗ trợ touch trên di động
+        // Hỗ trợ cảm ứng di động
         this.listenBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            this.startRecording('en-US');
+            this.startPress('en-US');
         });
         this.listenBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
-            this.stopRecordingAndTranslate();
+            this.endPress();
         });
         
         this.speakBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            this.startRecording('vi-VN');
+            this.startPress('vi-VN');
         });
         this.speakBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
-            this.stopRecordingAndTranslate();
+            this.endPress();
         });
     }
     
-    async startRecording(language) {
-        if (this.isRecording) {
+    startPress(language) {
+        if (this.isListening) {
             return;
         }
         
@@ -61,89 +119,17 @@ class TranslationApp {
         const modeText = language === 'en-US' ? 'TIẾNG ANH MỸ' : 'TIẾNG VIỆT';
         const speakHint = language === 'en-US' ? 'Nói TIẾNG ANH' : 'Nói TIẾNG VIỆT';
         
-        this.resultText.innerHTML = `🎙️ ĐANG GHI ÂM...\n${speakHint}\n\nThả nút để dịch ngay!`;
+        this.resultText.innerHTML = `🎙️ GIỮ NÚT VÀ NÓI\n${speakHint}\n\nBuông nút để dịch ngay!`;
         this.updateStatus(`Đang nghe ${modeText}...`, 'listening');
         
-        try {
-            this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            this.mediaRecorder = new MediaRecorder(this.stream);
-            this.audioChunks = [];
-            
-            this.mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    this.audioChunks.push(event.data);
-                }
-            };
-            
-            this.mediaRecorder.start(100);
-            this.isRecording = true;
-            
-        } catch (error) {
-            console.error('Lỗi microphone:', error);
-            this.updateStatus('Không thể truy cập microphone', 'error');
-            this.resultText.innerHTML = '❌ Vui lòng cho phép truy cập microphone';
-        }
+        this.recognition.lang = language;
+        this.recognition.start();
     }
     
-    async stopRecordingAndTranslate() {
-        if (!this.isRecording || !this.mediaRecorder) {
-            return;
+    endPress() {
+        if (this.isListening && this.recognition) {
+            this.recognition.stop();
         }
-        
-        this.updateStatus('Đang xử lý...', 'processing');
-        
-        this.mediaRecorder.onstop = async () => {
-            if (this.audioChunks.length === 0) {
-                this.updateStatus('Không có âm thanh', 'error');
-                this.resultText.innerHTML = '🔇 Không thu được âm thanh. Hãy thử lại.';
-                this.cleanup();
-                return;
-            }
-            
-            const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-            await this.transcribeAndTranslate(audioBlob);
-            this.cleanup();
-        };
-        
-        this.mediaRecorder.stop();
-        this.isRecording = false;
-    }
-    
-    async transcribeAndTranslate(audioBlob) {
-        this.resultText.innerHTML = `🔄 Đang nhận diện giọng nói...`;
-        
-        try {
-            // Sử dụng Web Speech API để nhận diện (nhanh hơn)
-            // Chuyển blob thành text thông qua temporary audio element
-            const audioUrl = URL.createObjectURL(audioBlob);
-            const audio = new Audio(audioUrl);
-            
-            // Cách đơn giản hơn: Dùng Web Speech API trực tiếp
-            // Nhưng Web Speech API không hỗ trợ từ blob, nên dùng cách ghi âm ngắn
-            
-            // Giải pháp: Dùng Web Speech API với thời gian ngắn
-            this.simulateTranslation();
-            
-        } catch (error) {
-            console.error('Lỗi:', error);
-            this.updateStatus('Lỗi xử lý', 'error');
-            this.resultText.innerHTML = '❌ Có lỗi xảy ra, vui lòng thử lại';
-        }
-    }
-    
-    simulateTranslation() {
-        // Demo tạm thời - thay bằng API thật
-        const demoText = this.currentMode === 'listen' ? "Hello, how are you?" : "Xin chào, tôi khỏe";
-        
-        this.resultText.innerHTML = `📝 Đã nhận diện: "${demoText}"\n\n🔄 Đang dịch...`;
-        
-        setTimeout(async () => {
-            if (this.currentMode === 'listen') {
-                await this.translateText(demoText, 'en', 'vi');
-            } else {
-                await this.translateText(demoText, 'vi', 'en');
-            }
-        }, 500);
     }
     
     async translateText(text, sourceLang, targetLang) {
@@ -160,9 +146,9 @@ class TranslationApp {
             
             if (data.success && data.translated) {
                 if (this.currentMode === 'listen') {
-                    this.resultText.innerHTML = `🎧 NGƯỜI NÓI (Tiếng Anh):\n"${text}"\n\n🇻🇳 TIẾNG VIỆT:\n"${data.translated}"`;
+                    this.resultText.innerHTML = `🎧 NGƯỜI NÓI (Tiếng Anh):\n"${text}"\n\n\n🇻🇳 TIẾNG VIỆT:\n"${data.translated}"`;
                 } else {
-                    this.resultText.innerHTML = `🇻🇳 BẠN NÓI (Tiếng Việt):\n"${text}"\n\n🔊 TIẾNG ANH:\n"${data.translated}"`;
+                    this.resultText.innerHTML = `🇻🇳 BẠN NÓI (Tiếng Việt):\n"${text}"\n\n\n🔊 TIẾNG ANH:\n"${data.translated}"\n\n🔊 Đang phát...`;
                     this.speakEnglish(data.translated);
                 }
                 this.updateStatus('✅ Hoàn thành', 'ready');
@@ -196,15 +182,6 @@ class TranslationApp {
         }
     }
     
-    cleanup() {
-        if (this.stream) {
-            this.stream.getTracks().forEach(track => track.stop());
-            this.stream = null;
-        }
-        this.audioChunks = [];
-        this.mediaRecorder = null;
-    }
-    
     updateStatus(message, type) {
         this.statusText.innerText = message;
         this.statusIndicator.classList.remove('listening', 'processing');
@@ -226,8 +203,5 @@ class TranslationApp {
 // Khởi tạo ứng dụng
 document.addEventListener('DOMContentLoaded', () => {
     const app = new TranslationApp();
-    console.log('🎉 Phiên Dịch Du Lịch - Chế độ NHẤN GIỮ ĐỂ NÓI, BUÔNG RA ĐỂ DỊCH!');
-    console.log('📌 Hướng dẫn:');
-    console.log('   - NHẤN GIỮ nút xanh dương → nói TIẾNG ANH → BUÔNG RA → dịch sang TIẾNG VIỆT');
-    console.log('   - NHẤN GIỮ nút xanh lá → nói TIẾNG VIỆT → BUÔNG RA → dịch sang TIẾNG ANH + phát âm');
+    console.log('🎉 Phiên Dịch Du Lịch - NHẤN GIỮ để nói, BUÔNG RA để dịch!');
 });
