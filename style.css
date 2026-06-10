@@ -11,32 +11,33 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    padding: 0;  /* Bỏ padding để tràn mép */
 }
 
-/* Container chính kích thước 375x675 */
+/* Container chính kích thước 375x675 - TRÀN MÉP TRÁI PHẢI */
 .app-container {
-    width: 375px;
+    width: 100%;  /* Đổi từ 375px thành 100% */
+    max-width: 500px; /* Giới hạn tối đa cho màn hình lớn */
     height: 675px;
     background: transparent;
-    border-radius: 30px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    border-radius: 0px;  /* Bỏ bo góc nếu muốn tràn hoàn toàn */
+    box-shadow: none;  /* Bỏ shadow vì tràn mép */
     overflow: hidden;
+    margin: 0 auto;  /* Căn giữa nhưng tràn 2 bên */
 }
 
-/* Khung viền trắng sáng */
+/* Khung viền trắng sáng - bo góc nhẹ ở trên dưới */
 .white-frame {
     width: 100%;
     height: 100%;
     background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
-    /* Xanh ngọc gradient */
-    border-radius: 30px;
+    border-radius: 0px;  /* Hoặc để 30px nếu muốn bo 4 góc */
     padding: 20px;
     display: flex;
     flex-direction: column;
     position: relative;
     overflow-y: auto;
-    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5), 0 10px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5);
 }
 
 /* Tùy chỉnh scrollbar */
@@ -117,6 +118,7 @@ body {
     line-height: 1.5;
     word-wrap: break-word;
     font-weight: 500;
+    white-space: pre-wrap;  /* Giữ xuống dòng */
 }
 
 .status-box {
@@ -190,13 +192,8 @@ body {
     gap: 5px;
 }
 
-.action-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-}
-
 .action-btn:active {
-    transform: translateY(0);
+    transform: scale(0.98);
 }
 
 .listen-btn {
@@ -259,14 +256,112 @@ body {
     color: rgba(255, 255, 255, 0.7);
 }
 
-/* Responsive cho PC (giữ nguyên kích thước) */
+/* Lịch sử */
+.history-section {
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    padding: 12px;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.history-title {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.history-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.history-btn {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    color: white;
+}
+
+.history-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 10px;
+}
+
+.history-item {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.history-content {
+    flex: 1;
+    cursor: pointer;
+}
+
+.history-viet {
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.history-eng {
+    color: #7f8c8d;
+    font-size: 11px;
+    margin-top: 3px;
+}
+
+.play-again-btn {
+    background: #4caf50;
+    border: none;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    cursor: pointer;
+    color: white;
+}
+
+.empty-history {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    padding: 15px;
+}
+
+.history-list::-webkit-scrollbar {
+    width: 3px;
+}
+
+/* Responsive cho PC */
 @media (min-width: 768px) {
     body {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     }
     
     .app-container {
+        max-width: 450px;
+        border-radius: 30px;
         box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        margin: 20px auto;
+    }
+    
+    .white-frame {
+        border-radius: 30px;
     }
 }
 
